@@ -1,314 +1,222 @@
-# ADR-005: Technology Stack Selection - Python FastAPI
+ADR-005: Technology Stack Selection - Python FastAPI
 
----
+Status:  Validated
+Date: 10 October 2025
+Last Updated: 24 November 2025
+Author: Adam James Brown
 
-**Status:** Accepted  
-**Date:** 10 October 2025  
-**Last Updated:** 10  november 2025  
-**Author:** Adam James Brown  
+Context and Problem Statement
+Now that I've decided on microservices (ADR-001), I need to pick the actual programming language and framework for building the backend services. This is important because it affects how fast I can develop, how well it performs, and whether the code will be maintainable.
+I'm working solo with about 3 months to build a working proof-of-concept, so I need something that lets me move quickly without sacrificing quality.
+The main question: What technology stack will let me build high-performance microservices fast enough for my POC timeline while still being good enough for production?
 
----
+Decision Drivers
+What I Need
 
-## Context and Problem Statement
+Timeline: About 3 months total, working alone
+Performance: Need to handle a "large user base" (case study requirement) with good response times
+Maintainability: Code needs to be clear and well-structured for academic assessment
+Learning curve: Can't spend weeks learning a completely new language
+Async support: Need proper async/await for the event-driven stuff (ADR-002)
+Type safety: Want to catch errors before runtime
+Multi-tenancy: Data isolation between companies (case study requirement)
 
-Now that I've decided on microservices (ADR-001), I need to pick the actual programming language and framework for building the backend services. This is a pretty important decision because it affects how fast I can develop, how well it performs, and whether the code will be maintainable.
 
-I'm working solo with about 2 months to build a working proof-of-concept, so I need something that lets me move quickly without sacrificing quality.
+Options I Considered
+Option 1: Node.js + Express
+Pros:
 
-**The main question:** What technology stack will let me build high-performance microservices fast enough for my POC timeline while still being good enough for production?
+Same language for frontend and backend
+Really good async support
+Massive ecosystem
+Fast to develop REST APIs
 
----
+Cons:
 
-## Decision Drivers
+Type safety is weak even with TypeScript
+Can get messy with nested callbacks
+Not as good for data-heavy operations
 
-### What I Need
-- **Timeline:** I've got about 3 months total, and I'm working alone
-- **NFR2 (Performance):** Need to support 500 concurrent users with <2s response time
-- **NFR6 (Maintainability):** Code needs to be clear and well-structured for academic assessment
-- **Learning curve:** I can't spend weeks learning a completely new language
-- **Async support:** Need proper async/await for the event-driven stuff (ADR-002)
-- **Type safety:** Want to catch errors before runtime
-- **Community support:** Need good docs and help when I get stuck
+My thoughts: Node.js is solid but Python feels better for database work and complex business logic.
 
----
+Option 2: Java Spring Boot
+Pros:
 
-## Options I Considered
+Proper enterprise-grade framework
+Really strong typing with compile-time checking
+Mature ecosystem with solutions for everything
+Spring Cloud is built for microservices
 
-### Option 1: Node.js + Express
+Cons:
 
-**What it is:** JavaScript (or TypeScript) with the Express framework.
+Development is slower than Python
+Steep learning curve
+Way overkill for a solo POC
 
-**Pros:**
-- Same language for frontend and backend (React + Node.js)
-- Really good async support - JavaScript is built for async
-- Massive ecosystem (npm has everything)
-- Fast to develop REST APIs
-- Tons of tutorials and examples
+My thoughts: Spring Boot is what big companies use, but it's designed for large teams. For a solo POC, it would slow me down massively.
 
-**Cons:**
-- Type safety is weak even with TypeScript
-- Can still get "callback hell" if you're not careful
-- Not as good for data-heavy operations
-- TypeScript compilation adds extra steps
-- Can still get runtime type errors
+Option 3: Python FastAPI  (My Choice)
+Pros:
 
-**My thoughts:** Node.js is solid and I've used it before. The single language thing is tempting. But for data-intensive stuff with databases and complex business logic, Python feels like a better fit.
+Fast development: Python's syntax is concise
+Async built-in: Built on Starlette, handles async operations really well
+Type safety: Pydantic models give me runtime validation AND type hints
+Auto documentation: Swagger/OpenAPI docs generated automatically - massive time saver
+Performance:fast 
+Readable code: Perfect for academic assessment
+Great ecosystem: SQLAlchemy for database, Pika for RabbitMQ, pytest for testing
 
----
+Cons:
 
-### Option 2: Java Spring Boot
+Some errors only show up at runtime
 
-**What it is:** Enterprise Java with the Spring Boot framework.
+Why I chose this: FastAPI works brilliantly for my poc. It's fast to develop with, performs well, and produces clean readable code. The automatic API documentation is brilliant - saves hours of work.
 
-**Pros:**
-- Proper enterprise-grade framework
-- Really strong typing with compile-time checking
-- Excellent for big teams
-- Mature ecosystem with solutions for everything
-- Great IDE support
-- Spring Cloud is built for microservices
+Option 4: Go (Golang)
+Pros:
 
-**Cons:**
-- SO MUCH boilerplate code
-- Development is slower than Python
-- Steeper learning curve
-- Compilation takes forever
-- Uses loads of memory
-- Way overkill for a 2-month POC
+Excellent performance
+Built-in concurrency with goroutines
+Compiles to a single binary
 
-**My thoughts:** Spring Boot is what big companies use, but it's designed for teams of 20+ developers. For a solo POC, it would slow me down massively. I'd spend more time fighting with configuration than building features.
+Cons:
 
----
+Steeper learning curve
+Would slow down POC development
 
-### Option 3: Python FastAPI ✓ **(My Choice)**
+My thoughts: Go is brilliant for production systems but would slow me down for rapid POC development.
 
-**What it is:** Modern Python framework specifically designed for building APIs with automatic documentation.
+My Decision
+I'm going with Python 3.11+ and FastAPI 0.104+.
+Why This Makes Sense
 
-**Pros:**
-- **Fast development:** Python's syntax is concise - maybe 3-5x less code than Java
-- **Async built-in:** Built on top of Starlette, handles async operations really well
-- **Type safety:** Pydantic models give me runtime validation AND type hints
-- **Auto documentation:** Swagger/OpenAPI docs generated automatically - massive time saver
-- **Performance:** Surprisingly fast - comparable to Node.js according to benchmarks
-- **Readable code:** Perfect for academic assessment - shows understanding without masses of boilerplate
-- **Great ecosystem:** SQLAlchemy for database, Celery for background tasks, pytest for testing
-- **Easy to learn:** Python is one of the easiest languages to pick up
+Development Speed: Python's concise syntax means I can build features really quickly. FastAPI's automatic validation and documentation saves me hours of work.
+Performance: FastAPI benchmarks show it can handle 20,000+ requests per second. More than enough for the case study's "large user base" requirement.
+Type Safety: Pydantic models give me runtime validation. Invalid data gets caught automatically. Plus type hints help my IDE catch mistakes.
+Async Support: FastAPI has first-class async/await support, essential for my event-driven architecture. Can handle database queries, RabbitMQ messages, and external APIs all asynchronously.
+Maintainability: Python code is really readable. For academic assessment, this is important - markers can understand what I'm doing easily.
+Free Documentation: FastAPI automatically generates interactive API documentation. Just browse to /docs and get a full Swagger UI. Brilliant for demonstrations.
 
-**Cons:**
-- Smaller in enterprises compared to Java (though it's growing fast)
-- Global Interpreter Lock (GIL) can limit CPU parallelism (but I don't care - my services are I/O-bound)
-- Ecosystem less mature than Spring Boot
-
-**Why I chose this:** FastAPI hits the sweet spot. It's fast to develop with, performs well, and produces clean readable code. The automatic API documentation is brilliant - I get interactive API docs without writing any documentation code. Perfect for a POC that needs to work well AND be easy to understand.
-
----
-
-### Option 4: Go (Golang)
-
-**What it is:** Google's compiled language designed for concurrent systems.
-
-**Pros:**
-- Excellent performance
-- Built-in concurrency with goroutines
-- Compiles to a single binary (easy deployment)
-- Fast compilation
-- Increasingly popular for microservices
-
-**Cons:**
-- Less intuitive syntax than Python
-- Smaller ecosystem
-- More verbose error handling
-- Steeper learning curve
-- Would slow down POC development
-
-**My thoughts:** Go is brilliant for production systems where performance is critical, but it would slow me down for rapid POC development. Maybe for a future version.
-
----
-
-## My Decision
-
-**I'm going with Python 3.11+ and FastAPI 0.104+.**
-
-### Why This Makes Sense
-
-1. **Development Speed:** Python's concise syntax means I can build features really quickly. FastAPI's automatic validation and documentation generation saves me hours of work.
-
-2. **Performance (NFR2):** FastAPI benchmarks show it can handle 20,000-30,000 requests per second. I need 500 concurrent users. That's plenty of headroom.
-
-3. **Type Safety:** Pydantic models give me runtime validation. If someone sends invalid data to my API, it gets caught automatically. Plus type hints help my IDE catch mistakes.
-
-4. **Async Support:** FastAPI has first-class async/await support, which is essential for my event-driven architecture. Can handle database queries, RabbitMQ messages, and external APIs all asynchronously.
-
-5. **Maintainability (NFR6):** Python code is really readable. For academic assessment, this is important - markers can understand what I'm doing without wading through boilerplate.
-
-6. **Ecosystem:**
-   - **SQLAlchemy:** Mature ORM for PostgreSQL, works great with multi-tenant patterns
-   - **Celery:** For async background tasks in Notification Service
-   - **Pika:** RabbitMQ client
-   - **Pytest:** Best testing framework I've used
-   - **Pydantic:** Perfect for validating request/response models
-
-7. **Free Documentation:** FastAPI automatically generates interactive API documentation. I just browse to `/docs` and get a full Swagger UI. Brilliant for demonstration.
-
-### How I'm Setting It Up
-
-**Project structure:**
-```
-complaint-service/
-├── app/
-│   ├── api/
-│   │   └── controllers/          # FastAPI routers (endpoints)
-│   ├── domain/
-│   │   └── entities/             # Domain models
-│   ├── services/
-│   │   └── complaint_service.py  # Business logic
-│   ├── repositories/
-│   │   └── complaint_repository.py  # Data access
-│   └── main.py                   # FastAPI app
-├── tests/
-├── requirements.txt
-└── Dockerfile
-```
-
-**Key libraries I'm using:**
-```
+Project Structure
+services/
+├── user-service/
+│   ├── app/
+│   │   ├── api/          # FastAPI endpoints
+│   │   ├── models/       # Database models
+│   │   ├── services/     # Business logic
+│   │   └── main.py       
+│   └── Dockerfile
+├── complaint-service/
+│   └── app/...
+└── notification-service/
+    └── app/...
+Key Libraries
 fastapi==0.104.1          # Web framework
-uvicorn==0.24.0           # ASGI server (runs FastAPI)
+uvicorn==0.24.0           # ASGI server
 pydantic==2.4.2           # Data validation
-sqlalchemy==2.0.23        # ORM for database
-alembic==1.12.1           # Database migrations
-celery==5.3.4             # Async background tasks
+sqlalchemy==2.0.23        # ORM for PostgreSQL
+bcrypt==4.0.1             # Password hashing
+pyjwt==2.8.0              # JWT tokens
 pika==1.3.2               # RabbitMQ client
-redis==5.0.1              # Caching
-pytest==7.4.3             # Testing
-```
-
-**Example of what FastAPI code looks like:**
-```python
-from fastapi import APIRouter, Depends
-from pydantic import BaseModel
-
-router = APIRouter()
-
-class ComplaintCreateRequest(BaseModel):
-    subject: str
-    description: str
-    category_id: str
-    priority: PriorityEnum
-
-@router.post("/complaints", status_code=201)
+Code Example
+python@router.post("/complaints", status_code=201)
 async def create_complaint(
-    request: ComplaintCreateRequest,
-    service: ComplaintService = Depends(get_complaint_service),
-    tenant_id: str = Depends(get_tenant_from_jwt)
+    request: ComplaintCreate,
+    current_user: dict = Depends(get_current_user)
 ) -> ComplaintResponse:
-    complaint = await service.create_complaint(request, tenant_id)
+    complaint = await service.create_complaint(request, current_user)
     return ComplaintResponse.from_entity(complaint)
-```
+What's brilliant:
 
-**What's brilliant about this:**
-- Type hints for IDE autocomplete
-- Pydantic automatically validates the request
-- Auto-generated API docs show this endpoint at `/docs`
-- Async/await means this doesn't block while waiting for database
-- Dependency injection keeps code testable
+Type hints for IDE autocomplete
+Pydantic automatically validates the request
+Auto-generated docs show this at /docs
+Async/await means no blocking
+Dependency injection keeps code testable
 
----
 
-## Consequences
+Validation Results
+What Actually Happened 
+Development Speed:
 
-### What I Gain
-- Really fast development - can build features in hours not days
-- Clean, readable code perfect for academic assessment
-- Automatic API documentation impresses in demonstrations
-- Type checking catches errors early
-- Easy to write comprehensive tests
-- Low memory usage (good for Docker containers)
-- Excellent async performance for event-driven architecture
+Built User Service, Complaint Service, Notification Service in 5 weeks
+Python code is more concise than the amount of equivalent Java code
 
-### What I'm Dealing With
-- Python's dynamic nature means some errors only show up at runtime
-- GIL limits CPU parallelism (but this doesn't matter for my I/O-bound services)
-- Smaller talent pool for enterprise hiring compared to Java
-- Python packaging (pip/virtualenv) is less robust than Java's Maven/Gradle
+Performance:
 
-### How I'm Managing It
-- Using MyPy for static type checking in my CI pipeline
-- Writing lots of unit tests (targeting 80%+ coverage)
-- Pydantic catches data validation errors at the API boundary
-- All my services are I/O-bound (database, message queues), so GIL doesn't matter
-- Adding type hints and docstrings everywhere for maintainability
+Average response times: 100-200ms
+Health checks: <10ms
+Handles concurrent requests easily
+Memory usage: ~50MB per service
 
----
+Type Safety:
 
-## Performance Validation
+Pydantic caught enum case mismatches (uppercase vs lowercase)
+Caught missing dependencies (email-validator)
+Caught UUID serialization issues before runtime
+Saved hours of debugging
 
-**FastAPI benchmarks (TechEmpower):**
-- 20,000-30,000 requests/second on a single core
-- Comparable to Node.js, much faster than Django or Flask
-- Memory efficient: about 50MB per service
+Multi-Tenancy:
 
-**My requirements:**
-- 500 concurrent users
-- <2s response time
-- FastAPI easily exceeds this with loads of room to spare
+SQLAlchemy + PostgreSQL schemas work perfectly
+Data isolation validated (tenant_001 vs tenant_002)
+Case study requirement met
 
-**My testing plan:**
-- Use Locust to simulate 500 concurrent users
-- Target: 95% of requests under 500ms (well under my 2s requirement)
-- Document results in Task 2
+Documentation:
 
----
+Interactive API docs at /docs for both services
+Zero manual documentation needed
+Brilliant for testing and demonstrations
 
-## Could I Use Different Tech for Different Services?
+Problems I Hit (And Fixed)
 
-**Notification Service:** Could use Node.js (it's great for async), but keeping everything in Python reduces complexity.
+Bcrypt version conflict - Fixed by pinning versions (30 mins)
+Enum case mismatch - Changed Python enums to lowercase (10 mins)
+UUID serialization - Manual string conversion needed (20 mins)
+Missing email-validator - Added to requirements (5 mins)
 
-**Reporting Service:** Could use specialized analytics tools like Apache Superset, but Python + Pandas is enough for the POC.
+Total debugging time: About 1 hour
+Python's error messages were clear and easy to Google solutions.
 
-**My decision:** Stick with Python/FastAPI for everything. When you're working solo, reducing cognitive overhead is important. Don't want to be context-switching between languages.
+Consequences
+What I Gain 
 
----
+Really fast development - features built in hours not days
+Clean, readable code perfect for academic assessment
+Automatic API documentation for demonstrations
+Type checking catches errors early
+Easy to write tests with pytest
+Low memory usage (good for Docker)
+Excellent async performance for events
 
-## Is This Production-Ready?
+What I'm Dealing With 
 
-Yes! FastAPI is used in production by:
-- **Microsoft:** Several Azure services
-- **Uber:** Internal APIs
-- **Netflix:** Parts of their platform
-- **Explosion AI:** spaCy API (the NLP library)
+Python's dynamic nature means some errors only show up at runtime
+Smaller talent pool for enterprise hiring compared to Java
 
-**For production deployment:**
-- Use Gunicorn with Uvicorn workers
-- Docker containerization (already doing this)
-- Kubernetes or Docker Swarm for orchestration
-- Built-in health check endpoints
+How I'm Managing It
 
----
+Pydantic catches data validation errors at the API boundary
+Writing comprehensive tests (targeting 80%+ coverage)
+All my services are I/O-bound (database, message queues), not CPU-bound
+Adding type hints and docstrings everywhere
 
-## Trade-offs I'm Making
 
-**Python vs Java:** Java's stronger typing would catch more errors at compile-time, but Python's faster development is more valuable for a POC. Can always rewrite critical services in Go/Java later if needed.
+Trade-offs
+Python vs Java: Java's stronger typing catches more errors at compile-time, but Python's faster development is more valuable for a POC. Can always rewrite critical services later if needed.
+Single Language: Could use Node.js for Notification Service or Go for high-performance parts. But keeping everything in Python reduces cognitive overhead for solo development.
+Framework Choice: FastAPI is simpler than Spring Boot but more structured than Flask. Good balance - provides structure without being overwhelming.
 
-**Single Language vs Best-of-Breed:** Could use Node.js for Notification Service (great async) and Go for high-performance parts. But the cognitive overhead of switching languages isn't worth it for a solo POC.
+Sources
 
-**Framework Complexity:** FastAPI is simpler than Spring Boot but more opinionated than Flask. This is a good trade-off - it provides structure without being overwhelming.
+Ramírez, S. (2023). FastAPI Documentation. Retrieved from https://fastapi.tiangolo.com/
+TechEmpower. (2024). Web Framework Benchmarks Round 22. Retrieved from https://www.techempower.com/benchmarks/
+Percival, H., & Gregory, B. (2020). Architecture Patterns with Python. O'Reilly Media.
 
----
 
-## Sources I Used
+Related Decisions
 
-- Ramírez, S. (2023). *FastAPI Documentation*. Retrieved from https://fastapi.tiangolo.com/
-- TechEmpower. (2024). *Web Framework Benchmarks Round 22*. Retrieved from https://www.techempower.com/benchmarks/
-- Percival, H., & Gregory, B. (2020). *Architecture Patterns with Python*. O'Reilly Media.
-- Van Rossum, G., Levkivskyi, I. (2014). *PEP 484 - Type Hints*. Python.org.
-
----
-
-## Related Decisions
-
-These other ADRs connect to this one:
-- **ADR-001:** Microservices Architecture (needs lightweight framework)
-- **ADR-002:** Event-Driven Architecture (requires async/await support)
-- **ADR-003:** CQRS Pattern (SQLAlchemy handles multiple database connections)
-- **ADR-004:** Multi-Tenant Strategy (Python middleware sets PostgreSQL search_path)
+ADR-001: Microservices Architecture (needs lightweight framework)
+ADR-002: Event-Driven Architecture (requires async/await support)
+ADR-003: CQRS Pattern (SQLAlchemy handles read/write separation)
+ADR-004: Multi-Tenant Strategy (PostgreSQL search_path implemented successfully)
