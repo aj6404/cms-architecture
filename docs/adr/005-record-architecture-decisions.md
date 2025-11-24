@@ -1,4 +1,3 @@
-```markdown
 # ADR-005: Technology Stack Selection - Python FastAPI
 
 ---
@@ -70,7 +69,7 @@ I'm working solo with about 3 months to build a working proof-of-concept, so I n
 
 ---
 
-### Option 3: Python FastAPI  **(My Choice)**
+### Option 3: Python FastAPI ✅ **(My Choice)**
 
 **Pros:**
 - **Fast development:** Python's syntax is concise
@@ -122,7 +121,6 @@ I'm working solo with about 3 months to build a working proof-of-concept, so I n
 6. **Free Documentation:** FastAPI automatically generates interactive API documentation. Just browse to `/docs` and get a full Swagger UI. Brilliant for demonstrations.
 
 ### Project Structure
-
 ```
 services/
 ├── user-service/
@@ -139,7 +137,6 @@ services/
 ```
 
 ### Key Libraries
-
 ```
 fastapi==0.104.1          # Web framework
 uvicorn==0.24.0           # ASGI server
@@ -151,7 +148,6 @@ pika==1.3.2               # RabbitMQ client
 ```
 
 ### Code Example
-
 ```python
 @router.post("/complaints", status_code=201)
 async def create_complaint(
@@ -225,7 +221,7 @@ Python's error messages were clear and easy to Google solutions.
 - Easy to write tests with pytest
 - Low memory usage (good for Docker)
 - Excellent async performance for events
-
+  
 ### What I'm Dealing With 
 
 - Python's dynamic nature means some errors only show up at runtime
@@ -264,4 +260,3 @@ Python's error messages were clear and easy to Google solutions.
 - **ADR-002:** Event-Driven Architecture (requires async/await support)
 - **ADR-003:** CQRS Pattern (SQLAlchemy handles read/write separation)
 - **ADR-004:** Multi-Tenant Strategy (PostgreSQL search_path implemented successfully)
-```
