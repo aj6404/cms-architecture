@@ -69,7 +69,7 @@ I'm working solo with about 3 months to build a working proof-of-concept, so I n
 
 ---
 
-### Option 3: Python FastAPI ✅ **(My Choice)**
+### Option 3: Python FastAPI ✓ **(My Choice)**
 
 **Pros:**
 - **Fast development:** Python's syntax is concise
