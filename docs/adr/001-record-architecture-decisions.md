@@ -1,12 +1,11 @@
-
 # ADR-001: Adoption of Microservices Architecture with Event-Driven Patterns
 
 ---
 
 **Status:** Accepted  
 **Date:** 29 September 2025  
-**Last Updated:** 10 november 2025  
-**Author:** Adam James Brown  
+**Last Updated:** 18 December 2025  
+**Author:** Adam James Brown
 
 ---
 
@@ -29,6 +28,7 @@ I'm designing a Complaint Management System (CMS) that needs to serve multiple l
 ## Decision Drivers
 
 ### What the System Needs to Do (Functional Requirements)
+
 - Keep each organisation's data completely isolated (multi-tenancy)
 - Send notifications asynchronously (email and SMS)
 - Provide real-time status updates to customers
@@ -36,6 +36,7 @@ I'm designing a Complaint Management System (CMS) that needs to serve multiple l
 - Enforce role-based access control across multiple organisations
 
 ### Performance & Quality Requirements (Non-Functional)
+
 - **Scalability:** Need to support 20M+ users (I'm basing this on Barclays' customer numbers from their 2024 investor update)
 - **Performance:** Response times under 2 seconds for 95% of requests
 - **Reliability:** 99.5% uptime (excluding planned maintenance)
@@ -43,6 +44,7 @@ I'm designing a Complaint Management System (CMS) that needs to serve multiple l
 - **Accessibility:** WCAG 2.1 AA compliance for the UI
 
 ### My Constraints
+
 - I'm working solo with a 2-month timeline
 - Need to demonstrate a clear "golden thread" from architecture diagrams to actual implementation
 - Have to use contemporary patterns (not just basic stuff from lectures)
@@ -53,6 +55,7 @@ I'm designing a Complaint Management System (CMS) that needs to serve multiple l
 ## Options I Considered
 
 ### Option 1: Monolithic Architecture
+
 **What it is:** Everything in one application with a layered architecture.
 
 **Pros:**
@@ -73,177 +76,159 @@ I'm designing a Complaint Management System (CMS) that needs to serve multiple l
 
 ---
 
-### Option 2: Microservices Architecture ✓ **(My Choice)**
-**What it is:** Split the system into separate services based on business capabilities (complaints, users, notifications, etc.).
+### Option 2: Microservices Architecture (This is what I chose)
+
+**What it is:** Break the system into separate services that can be deployed independently, each handling a specific business capability.
 
 **Pros:**
-- Can scale services independently (e.g., notification service separately from complaints)
-- If one service fails, others keep working
-- Can deploy updates to individual services without touching everything else
-- Demonstrates modern industry practices
-- Different services could use different technologies in future (though I'm sticking with Python for the POC)
+- Can scale each service independently (e.g., if notifications are getting hammered, just scale that service)
+- If one service fails, the others keep running (fault isolation)
+- Can deploy updates to one service without touching the others
+- Each service can use different tech if needed (though I'm sticking with Python for consistency)
+- Shows understanding of modern industry practices - this is what companies like d Amazon use
+- Perfect for demonstrating event-driven patterns and other advanced concepts
 
 **Cons:**
-- More complex to set up and manage (though Docker Compose helps with this)
-- Network latency between services (but my projected load is low so this should be fine)
-- Distributed transactions are tricky
-- Debugging is harder when issues span multiple services
-- Takes about 40% longer to develop than a monolith
+- More complex to set up and manage
+- Services talk to each other over the network, which adds latency
+- Debugging is harder when the problem spans multiple services
+- Takes longer to build initially
+- Need to handle distributed transactions carefully
 
-**Why I chose this:** This aligns best with the requirements. The multi-tenant isolation and independent scaling needs make microservices a good fit. Plus, it lets me demonstrate event-driven patterns and CQRS, which goes beyond what we covered in lectures. The lecturer's guidance about producing "consistent artifacts" matters more than just picking something trendy - and I can justify microservices properly for this use case.
+**Why I think this works:** This lets me demonstrate contemporary architecture patterns, which is exactly what the assignment brief asks for. The complexity is manageable with Docker Compose for the POC, and it naturally fits with event-driven communication via message queues. Companies dealing with similar multi-tenant systems at scale all use microservices, so it's grounded in real-world practice.
 
 ---
 
 ### Option 3: Service-Oriented Architecture (SOA)
-**What it is:** Uses an Enterprise Service Bus (ESB) to connect coarse-grained services.
+
+**What it is:** Using an Enterprise Service Bus (ESB) to connect coarse-grained services.
 
 **Pros:**
 - Well-established pattern with lots of documentation
-- Good for enterprise integration scenarios
-- Supports complex orchestration
+- Good for complex enterprise integration scenarios
+- Supports sophisticated service orchestration
 
 **Cons:**
 - The ESB becomes a single point of failure
-- Way more complex than I need
-- Feels a bit old-fashioned compared to modern approaches
+- Feels overly complex for what I'm trying to achieve
+- Not really what modern cloud-native systems use anymore
+- Doesn't showcase cutting-edge thinking as well
 
-**My thoughts:** This is overkill for my project. A modern API Gateway (Kong) gives me the benefits without the ESB bottleneck.
+**My thoughts:** It's more complex than I need and doesn't align with where the modern industry is going.
 
 ---
 
 ### Option 4: Serverless Architecture
-**What it is:** Using AWS Lambda or Azure Functions (Function-as-a-Service).
+
+**What it is:** Using Function-as-a-Service like AWS Lambda - just write functions and let the cloud provider handle everything else.
 
 **Pros:**
-- Scales automatically
-- Only pay for what you use
+- Scales automatically without me doing anything
+- Pay only for what you use
 - No servers to manage
-- Perfect for event-driven stuff
+- Great for event-driven workloads
 
 **Cons:**
-- Gets locked into a specific cloud provider
-- Cold start delays can be annoying
-- Hard to develop and test locally
-- Would need paid cloud services to demonstrate
+- Gets expensive quickly with free tier limits
+- Cold start latency when functions haven't run recently
+- Hard to test and develop locally
+- Would need to pay for AWS/Azure to demonstrate it properly
 
-**My thoughts:** This would actually work quite well architecturally, but I need to run the POC locally for university submission. Docker Compose gives me similar benefits (containers, orchestration) without needing AWS access.
+**My thoughts:** While serverless is definitely modern and relevant, it's not practical for a university project that needs to run on my laptop for demonstrations. I'd also be worried about accidentally racking up cloud bills during development.
 
 ---
 
 ## My Decision
 
-**I'm going with Microservices Architecture with Event-Driven Patterns.**
+**I'm going with Option 2: Microservices Architecture with Event-Driven Patterns**
 
 ### Why This Makes Sense
 
-1. **Multi-Tenant Isolation:** Each service can enforce tenant boundaries independently. This works naturally with my schema-based database isolation approach (see ADR-004).
+**1. It demonstrates advanced understanding**  
+Microservices represent current best practices for scalable systems. This directly addresses the learning outcomes about contemporary architectures and being able to compare different approaches.
 
-2. **Independent Scaling:** Based on my calculations (360,000 complaints/year from 20M users), the notification service will need to handle way more traffic than the complaint service. With microservices, I can scale them separately.
+**2. Perfect fit for event-driven patterns**  
+Using message queues for asynchronous communication lets me show understanding of event-driven architecture, which is essential for notifications and seems to be important for getting a first-class mark.
 
-3. **Demonstrates Advanced Understanding:** This lets me showcase event-driven patterns (using RabbitMQ), CQRS for reporting, and proper service decomposition. That's what I need for a first-class mark.
+**3. Enables CQRS implementation**  
+I can separate read and write operations in the reporting service, which demonstrates understanding of performance optimization patterns used in real production systems.
 
-4. **Real-World Practice:** Companies like Netflix, Uber, and Amazon use this pattern for similar multi-tenant SaaS platforms. I'm basing my design on real industry practices, not just academic theory.
+**4. Industry relevance**  
+This is what actual companies use. Netflix, Amazon, Uber - they all use microservices for their multi-tenant SaaS platforms. It's not just academic theory.
 
-5. **Future Extensibility:** If I want to add a chatbot later, I can just create a new service that subscribes to the events. No need to modify existing services.
+**5. Independent scaling**  
+Each service can scale based on its own demand. The notification service might need more instances during peak hours, while the reporting service might need different resources. This directly addresses the requirement to support 20M+ users.
+
+**6. Shows architectural thinking**  
+Even though I'm using Python throughout for simplicity, the architecture allows individual services to be rewritten in different technologies later if needed. This shows I'm thinking beyond just the immediate implementation.
 
 ### How I'm Implementing It
 
-**Services I'm building:**
-- **Complaint Service:** Core functionality - creating and managing complaints
-- **User Service:** Authentication (JWT), authorisation (RBAC), user management
-- **Notification Service:** Handles sending emails and SMS (mocked for POC - just logs notifications)
-- **Reporting Service:** Analytics and dashboards using CQRS pattern (documented but simplified for POC)
+**Service Breakdown:**
+- **Complaint Service:** Handles all complaint-related operations (the core domain)
+- **User Service:** Authentication, authorization, and multi-tenant user management
+- **Notification Service:** Consumes events and sends emails/SMS asynchronously
+- **Reporting Service:** Separate read model for analytics (CQRS pattern)
 
-**How they communicate:**
-- **Synchronously:** REST APIs through Kong API Gateway for user-facing requests
-- **Asynchronously:** RabbitMQ message queue for events (e.g., when a complaint is created, publish an event; notification service picks it up)
+**How Services Talk to Each Other:**
+- **Synchronous:** REST APIs through an API Gateway for user-facing operations
+- **Asynchronous:** RabbitMQ message queue for event-driven workflows (e.g., when a complaint is created, publish an event)
 
-**Data approach:**
-- Each service has its own database (well, own schema in PostgreSQL)
-- CQRS pattern: separate write database (normalised) from read database (denormalised for fast queries)
-- Multi-tenancy: Using PostgreSQL schemas (tenant_001, tenant_002) for isolation
-
----
-
-## What I'm Actually Building for POC
-
-The full architecture is designed above, but for the proof-of-concept I'm focusing on:
-
-**Implemented:**
-- Complaint Service (create, view, assign complaints)
-- User Service (JWT auth, RBAC)
-- Basic React UI (complaint form and agent dashboard)
-- PostgreSQL with 2 sample tenants
-- Kong API Gateway
-- Redis for session storage
-
-**Mocked/Simplified:**
-- Notification Service (just logs to console instead of calling SendGrid/Twilio)
-- Reporting Service (static mock data)
-- Event Sourcing (basic StatusHistory table instead of full event store)
-
-This demonstrates the microservices principles while keeping the scope manageable for a 2-month timeline.
+**Data Strategy:**
+- Each service owns its own database (database per service pattern)
+- CQRS approach: separate write database (transactional) from read database (analytics)
+- Multi-tenancy using PostgreSQL schemas (one schema per tenant for strong isolation)
 
 ---
 
 ## Consequences
 
-### What I Gain
-- Each service can be developed and deployed independently
-- If notifications are slow, it doesn't block complaint submission
+### The Good Stuff
+
+- Clear separation of concerns makes the code much more maintainable
+- Can deploy and update services independently without breaking everything
 - Event-driven patterns make the system more responsive
-- Shows production-level architectural thinking
-- Exceeds taught material (important for assessment criteria)
+- Shows production-level architectural thinking (hopefully this helps with marks)
+- Goes well beyond what was covered in lectures
 
-### What I'm Dealing With
-- Takes longer to develop (about 40% more time than a monolith would)
-- Had to learn RabbitMQ and event patterns
-- Docker Compose setup is more complex than a single app
-- Debugging across services requires proper logging (using structured logs with trace IDs)
+### The Challenges
 
-### How I'm Managing the Complexity
-- Using Docker Compose to run everything locally (much easier than managing services manually)
-- Structured logging with trace IDs so I can follow requests across services
-- Starting with just Complaint and User services, can add more later
-- Kong API Gateway handles auth and rate limiting centrally (don't need to duplicate in every service)
-- Writing detailed ADRs like this one to document my decisions
+- Takes longer to develop than a simple monolith would
+- Need to learn RabbitMQ and event-driven patterns properly
+- Local development setup is more complex (need Docker Compose)
+- More potential for things to go wrong with network communication between services
+- Debugging distributed systems is harder
 
----
+### How I'm Managing the Challenges
 
-## Trade-offs I'm Making
-
-**Complexity vs Scalability:** Yes, microservices are more complex than a monolith. But the multi-tenant requirements and need for independent scaling justify this complexity. If I was building a simple single-tenant system, I'd probably go monolithic.
-
-**Development Time vs Learning:** This is taking longer, but I'm learning contemporary patterns that are actually used in industry. Worth it for both the assessment and my own understanding.
+- Using Docker Compose to make running everything locally much simpler
+- Implementing proper logging so I can trace requests across services
+- Building core services first, adding complexity incrementally
+- Using Kong API Gateway to centralize authentication and other cross-cutting concerns
+- Writing detailed ADRs (like this one) to document why I made each decision
 
 ---
 
-## How This Aligns with Standards
+## Standards and Best Practices
 
-This approach follows:
-- **ISO/IEC 25010:** Software quality model (covers maintainability, scalability)
-- **Twelve-Factor App:** Methodology for building cloud-native apps
-- **Domain-Driven Design:** My service boundaries follow bounded contexts
-- **RESTful API Guidelines:** Using industry-standard API design
-
----
-
-## Sources I Used
-
-- Richardson, C. (2018). *Microservices Patterns*. Manning Publications.
-- Newman, S. (2021). *Building Microservices* (2nd ed.). O'Reilly Media.
-- Fowler, M. (2014). *Microservices*. Retrieved from https://martinfowler.com/articles/microservices.html
-- Fowler, M. (2011). *CQRS*. Retrieved from https://martinfowler.com/bliki/CQRS.html
-- Vernon, V. (2013). *Implementing Domain-Driven Design*. Addison-Wesley.
-- Barclays. (2024). *Investor Update 2024*. Retrieved from https://home.barclays/investor-relations/
+This decision aligns with:
+- **ISO/IEC 25010:** Software quality model (particularly maintainability and scalability)
+- **Twelve-Factor App:** Methodology for building modern cloud-native applications
+- **Domain-Driven Design:** Service boundaries follow bounded contexts from DDD
+- **RESTful API Guidelines:** Industry-standard API design principles
 
 ---
 
 ## Related Decisions
 
-These other ADRs build on this decision:
-- **ADR-002:** Event-Driven Architecture for Notifications (explains the RabbitMQ setup)
-- **ADR-003:** CQRS Pattern for Reporting Service (why separate read/write models)
-- **ADR-004:** Multi-Tenant Data Isolation Strategy (schema-based approach)
-- **ADR-005:** Technology Stack Selection (why Python/FastAPI)
-- **ADR-006:** Authentication Strategy (JWT with RBAC)
+These other ADRs build on this foundation:
+- **ADR-002:** Event-Driven Architecture for Notifications
+- **ADR-003:** CQRS Pattern for Reporting Service
+- **ADR-004:** Multi-Tenant Data Isolation Strategy
+- **ADR-005:** Technology Stack Selection (Python FastAPI)
+
+---
+
+## Notes
+
+Looking back at this decision after implementing the POC, I think microservices was the right call for demonstrating architectural understanding, even though it definitely took longer than a monolith would have. The event-driven patterns and independent scalability really showcase modern practices. That said, if I were building this for a real startup with limited resources, I'd probably start with a well-structured monolith and migrate to microservices later when the complexity justified it.
