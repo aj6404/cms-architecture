@@ -183,7 +183,7 @@ Even though I'm using Python throughout for simplicity, the architecture allows 
 
 ## Consequences
 
-### The Good Stuff
+### The positives
 
 - Clear separation of concerns makes the code much more maintainable
 - Can deploy and update services independently without breaking everything
