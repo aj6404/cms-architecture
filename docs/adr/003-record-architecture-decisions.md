@@ -4,7 +4,7 @@
 
 **Status:** Accepted  
 **Date:** 5 October 2025  
-**Last Updated:** 10 november  2025  
+**Last Updated:** 18 December 2025  
 **Author:** Adam James Brown  
 
 ---
@@ -22,6 +22,7 @@ If I run these heavy analytics queries on the same database that's handling comp
 ## Decision Drivers
 
 ### What I Need
+
 - **NFR2 (Performance):** Manager dashboards need to load in under 2 seconds
 - **NFR3 (Reliability):** Analytics queries shouldn't slow down the main complaint system
 - Analytics need denormalized data (like "complaints per day by category") which is different from how I store transactional data
@@ -97,16 +98,16 @@ If I run these heavy analytics queries on the same database that's handling comp
 
 ### Why This Makes Sense
 
-1. **Performance Isolation (NFR2, NFR3):** Managers loading complex dashboards doesn't affect users submitting complaints. Each database is optimized for its specific job.
+**1. Performance Isolation (NFR2, NFR3):** Managers loading complex dashboards doesn't affect users submitting complaints. Each database is optimized for its specific job.
 
-2. **Query Optimization:** The read database uses denormalized materialized views - essentially pre-computed tables with the data already aggregated:
-   - `complaint_stats_by_day` - Daily metrics already calculated
-   - `agent_performance_summary` - Agent KPIs pre-computed
-   - `complaint_category_distribution` - Category percentages ready to go
+**2. Query Optimization:** The read database uses denormalized materialized views - essentially pre-computed tables with the data already aggregated:
+- `complaint_stats_by_day` - Daily metrics already calculated
+- `agent_performance_summary` - Agent KPIs pre-computed
+- `complaint_category_distribution` - Category percentages ready to go
 
-3. **Scalability (NFR5):** Can scale the read database for analytics independently of the write database. If I need to support 100 concurrent managers viewing dashboards, I just add more read replicas.
+**3. Scalability (NFR5):** Can scale the read database for analytics independently of the write database. If I need to support 100 concurrent managers viewing dashboards, I just add more read replicas.
 
-4. **Industry Standard:** CQRS is used by major companies for high-performance systems. It's a well-documented pattern with lots of resources, so I'm not inventing something weird.
+**4. Industry Standard:** CQRS is used by major companies for high-performance systems. It's a well-documented pattern with lots of resources, so I'm not inventing something weird.
 
 ### How I'm Implementing It
 
@@ -156,30 +157,33 @@ This view pre-calculates all the daily stats, so when a manager loads the dashbo
 ## What I'm Actually Building for POC
 
 For the proof-of-concept, I'm simplifying the CQRS implementation:
-- **Write side:** Fully implemented with normalized schema
-- **Read side:** Basic implementation with a couple of materialized views
-- **Synchronization:** The event flow works, but I'm only implementing 2-3 views rather than the full set
+- **Write side:** Fully implemented with normalized schema in Complaint Service
+- **Read side:** Basic Reporting Service structure exists but uses static/mocked data
+- **Synchronization:** Event publishing is implemented, but full read model synchronization is deferred
 
-This demonstrates the CQRS pattern without building every possible dashboard view.
+This demonstrates the architectural pattern and service separation without building the complete analytics infrastructure, which is outside the POC scope (R001, R005, NFR1).
 
 ---
 
 ## Consequences
 
 ### What I Gain
-- Dashboard queries run in under 500ms consistently (way below my 2s target)
+
+- Dashboard queries would run in under 500ms consistently (way below my 2s target)
 - Complaint submissions aren't affected by reporting load
 - Can add new analytics views without impacting write performance
 - Clear separation between transactional and analytical concerns
-- If needed later, I could even migrate the read database to a specialized analytics engine like ClickHouse
+- If needed later, could migrate the read database to a specialized analytics engine like ClickHouse
 
 ### What I'm Dealing With
+
 - Dashboards might show data that's 1-5 seconds old (eventual consistency)
 - Have to handle cases where synchronization fails
 - About 30% higher infrastructure cost (running two databases)
 - More complex to deploy and monitor
 
 ### How I'm Managing It
+
 - Adding "Last updated: X seconds ago" to dashboards so managers know the data might be slightly stale
 - Implementing a dead letter queue for events that fail to process
 - Retry logic with exponential backoff if updates fail
@@ -224,15 +228,6 @@ This approach follows:
 
 ---
 
-## Sources I Used
-
-- Fowler, M. (2011). *CQRS*. Retrieved from https://martinfowler.com/bliki/CQRS.html
-- Vernon, V. (2013). *Implementing Domain-Driven Design*, Chapter 12: Repositories. Addison-Wesley.
-- Microsoft. (2024). *CQRS pattern*. Azure Architecture Center. Retrieved from https://learn.microsoft.com/en-us/azure/architecture/patterns/cqrs
-- Kleppmann, M. (2017). *Designing Data-Intensive Applications*, Chapter 3: Storage and Retrieval. O'Reilly Media.
-
----
-
 ## Related Decisions
 
 These other ADRs connect to this one:
@@ -240,3 +235,5 @@ These other ADRs connect to this one:
 - **ADR-002:** Event-Driven Architecture (provides the synchronization mechanism)
 - **ADR-004:** Multi-Tenant Data Isolation (both databases use schema-based isolation)
 - **ADR-005:** Technology Stack Selection (explains why PostgreSQL for both sides)
+
+---
